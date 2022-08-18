@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd ">
+<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd ">
     <flow name="retrievetravelontiproutesandschedules-sapi-main">
         <http:listener config-ref="retrievetravelontiproutesandschedules-sapi-httpListenerConfig" path="/api/*">
             <http:response statusCode="#[vars.httpStatus default 200]">
@@ -92,7 +92,7 @@ output application/json
             </on-error-propagate>
         </error-handler>
     </flow>
-    <flow name="retrievetravelontiproutesandschedules-sapi-console">
+	<flow name="retrievetravelontiproutesandschedules-sapi-console">
         <http:listener config-ref="retrievetravelontiproutesandschedules-sapi-httpListenerConfig" path="/console/*">
             <http:response statusCode="#[vars.httpStatus default 200]">
                 <http:headers>#[vars.outboundHeaders default {}]</http:headers>
@@ -119,78 +119,28 @@ output application/json
             </on-error-propagate>
         </error-handler>
     </flow>
-    <flow name="get:\(transportType)\(transportCompany)\routes:retrievetravelontiproutesandschedules-sapi-config">
-        <ee:transform>
+    <sub-flow name="retrievetravelontiproutesandschedules-sapi-InitializeRequesVarible-Sub_Flow" doc:id="874c0c0d-6410-400a-aaa1-667cc3c41551" >
+		<ee:transform>
             <ee:variables>
-                <ee:set-variable variableName="transportType">attributes.uriParams.'transportType'</ee:set-variable>
-                <ee:set-variable variableName="transportCompany">attributes.uriParams.'transportCompany'</ee:set-variable>
+                <ee:set-variable variableName="transportType"><![CDATA[attributes.uriParams.'transportType']]></ee:set-variable>
+                <ee:set-variable variableName="transportCompany"><![CDATA[attributes.uriParams.'transportCompany']]></ee:set-variable>
+				<ee:set-variable variableName="transactionId"><![CDATA[%dw 2.0
+output application/java
+---
+attributes.headers.transactionId]]></ee:set-variable>
             </ee:variables>
         </ee:transform>
-        <ee:transform>
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-[
-  {
-    originalLocation: {
-      locationCode: "BEN-SG"
-    },
-    destinationLocation: {
-      locationCode: "KLG-MY"
-    }
-  }, 
-  {
-    originalLocation: {
-      locationCode: "BEN-SG"
-    },
-    destinationLocation: {
-      locationCode: "KLG-MY"
-    }
-  }
-]]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
+	</sub-flow>
+	<flow name="get:\(transportType)\(transportCompany)\routes:retrievetravelontiproutesandschedules-sapi-config">
+		<flow-ref doc:name="Flow Reference Initialize Request Vaiable" doc:id="72b9d3fb-00e1-4026-8065-9d3f864b3561" name="retrievetravelontiproutesandschedules-sapi-InitializeRequesVarible-Sub_Flow"/>
+		<logger level="INFO" doc:name="Logger" doc:id="c9db9d3f-86fd-465d-872c-82a39fc1293c" message="Request received for routes TravelOnTip SAPI for TransactionId: #[vars.transactionId]"/>
+		<flow-ref doc:name="Flow Reference" doc:id="d0f1a57a-ec7a-4a8e-b04c-c1c414edc0c1" name="TravelOnTip-getRoutes-ImplementationSub_Flow"/>
+		<logger level="INFO" doc:name="Logger" doc:id="7bee552c-e54e-4680-bab7-3802aa05ae91" message="Response sent for routes TravelOnTip SAPI for TransactionId: #[vars.transactionId]"/>
     </flow>
-    <flow name="get:\(transportType)\(transportCompany)\schdeules:retrievetravelontiproutesandschedules-sapi-config">
-        <ee:transform>
-            <ee:variables>
-                <ee:set-variable variableName="transportType">attributes.uriParams.'transportType'</ee:set-variable>
-                <ee:set-variable variableName="transportCompany">attributes.uriParams.'transportCompany'</ee:set-variable>
-            </ee:variables>
-        </ee:transform>
-        <ee:transform>
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-[
-  {
-    availableSeats: 20,
-    departureDateTime: "2019-04-30T16:41:41",
-    travelRoute: {
-      destinationLocation: {
-        locationCode: "BEN-SG"
-      },
-      originalLocation: {
-        locationCode: "KLG-MY"
-      }
-    }
-  }, 
-  {
-    availableSeats: 30,
-    departureDateTime: "2019-04-30T16:41:41",
-    travelRoute: {
-      destinationLocation: {
-        locationCode: "BEN-SG"
-      },
-      originalLocation: {
-        locationCode: "KLG-MY"
-      }
-    }
-  }
-]]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
+	<flow name="get:\(transportType)\(transportCompany)\schdeules:retrievetravelontiproutesandschedules-sapi-config">
+		<flow-ref doc:name="Flow Reference Initialize Request Vaiable" doc:id="1d7f61fa-486f-4b72-9154-50c4e555d00a" name="retrievetravelontiproutesandschedules-sapi-InitializeRequesVarible-Sub_Flow"/>
+		<logger level="INFO" doc:name="Logger" doc:id="cf3ffcbd-e602-454a-bb68-595454990849" message="Request received for schedules TravelOnTip SAPI for TransactionId: #[vars.transactionId]"/>
+		<flow-ref doc:name="Flow Reference" doc:id="6ffc6973-ad37-42de-858c-903fb2bbe447" name="TravelOnTip-getSchedules-ImplementationSub_Flow"/>
+		<logger level="INFO" doc:name="Logger" doc:id="92393478-339d-4791-9aca-2916ac9cbaae" message="Response sent for schedules TravelOnTip SAPI for TransactionId: #[vars.transactionId]"/>
     </flow>
 </mule>

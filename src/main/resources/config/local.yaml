@@ -5,5 +5,6 @@ http:
   requester:
     host: "localhost"
     port: "8081"
-    path: "/travelOnTipCall/{serviceType}"
+    routesPath: "/travelOnTipCall/routes"
+    schedulesPath: "/travelOnTipCall/schedules"
      
