@@ -19,6 +19,8 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 output application/json
 ---
 payload map(value, index)->{
+	"companyName": value.companyname,
+
     "originalLocation": {
       "locationCode": value.originallocation
     },
